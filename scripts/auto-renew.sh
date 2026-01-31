@@ -1,0 +1,29 @@
+#!/bin/bash
+# 開啟或關閉自動續簽 cron job
+
+set -e
+
+CRON_CMD="0 3 * * * cd $HOME/nginx-proxy && docker compose run --rm certbot renew --quiet && docker compose restart nginx"
+
+case "$1" in
+    on|enable)
+        (crontab -l 2>/dev/null | grep -v "nginx-proxy.*certbot"; echo "$CRON_CMD") | crontab -
+        echo "✅ 自動續簽已開啟（每天凌晨 3 點檢查）"
+        ;;
+    off|disable)
+        crontab -l 2>/dev/null | grep -v "nginx-proxy.*certbot" | crontab -
+        echo "❌ 自動續簽已關閉"
+        ;;
+    status)
+        if crontab -l 2>/dev/null | grep -q "nginx-proxy.*certbot"; then
+            echo "✅ 自動續簽：開啟"
+            crontab -l | grep "nginx-proxy.*certbot"
+        else
+            echo "❌ 自動續簽：關閉"
+        fi
+        ;;
+    *)
+        echo "用法: $0 {on|off|status}"
+        exit 1
+        ;;
+esac

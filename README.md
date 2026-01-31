@@ -1,0 +1,107 @@
+# Nginx Reverse Proxy
+
+Docker 化的 Nginx 反向代理，支援 Let's Encrypt wildcard SSL 憑證（透過 Cloudflare DNS 驗證）。
+
+## 快速開始
+
+### 1. 設定 Cloudflare API Token
+
+```bash
+cp certbot/cloudflare.example.ini certbot/cloudflare.ini
+# 編輯填入你的 API Token
+chmod 600 certbot/cloudflare.ini
+```
+
+### 2. 設定 DNS
+
+在 Cloudflare 加 A record：
+
+- `<subdomain>` → 你的伺服器 IP
+- `*.<subdomain>` → 你的伺服器 IP（wildcard）
+
+### 3. 設定 Nginx
+
+```bash
+cp nginx/conf.d/default.example.conf nginx/conf.d/default.conf
+# 編輯 default.conf，把 DOMAIN 換成你的域名
+```
+
+### 4. 簽發憑證
+
+```bash
+./scripts/cert-issue.sh <subdomain.domain.com>
+```
+
+### 5. 啟動服務
+
+```bash
+docker compose up -d
+```
+
+### 6. 開啟自動續簽
+
+```bash
+./scripts/auto-renew.sh on
+```
+
+## 目錄結構
+
+```text
+nginx-proxy/
+├── docker-compose.yml
+├── nginx/
+│   ├── nginx.conf
+│   └── conf.d/
+│       ├── default.example.conf  # 範例設定
+│       └── default.conf          # 實際設定（不進 git）
+├── certbot/
+│   ├── cloudflare.ini            # API Token（不進 git）
+│   └── conf/                     # SSL 憑證（不進 git）
+└── scripts/
+    ├── cert-issue.sh             # 簽發憑證
+    ├── cert-renew.sh             # 手動續簽
+    └── auto-renew.sh             # 自動續簽開關
+```
+
+## 新增服務
+
+編輯 `nginx/conf.d/default.conf`，加入新的 server block：
+
+```nginx
+server {
+    listen 443 ssl;
+    http2 on;
+    server_name xxx.DOMAIN;
+
+    ssl_certificate /etc/letsencrypt/live/DOMAIN/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/DOMAIN/privkey.pem;
+
+    location / {
+        proxy_pass http://host.docker.internal:PORT;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+然後重啟：
+
+```bash
+docker compose restart nginx
+```
+
+## 常用指令
+
+| 指令 | 說明 |
+| --- | --- |
+| `docker compose up -d` | 啟動服務 |
+| `docker compose down` | 停止服務 |
+| `docker compose restart nginx` | 重啟 nginx |
+| `docker compose logs -f nginx` | 查看 nginx logs |
+| `./scripts/cert-issue.sh` | 簽發憑證 |
+| `./scripts/cert-renew.sh` | 手動續簽 |
+| `./scripts/auto-renew.sh on` | 開啟自動續簽 |
+| `./scripts/auto-renew.sh off` | 關閉自動續簽 |
+| `./scripts/auto-renew.sh status` | 查看自動續簽狀態 |

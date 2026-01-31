@@ -1,0 +1,14 @@
+# Cloudflare credentials
+certbot/cloudflare.ini
+
+# Nginx config (包含實際域名)
+nginx/conf.d/default.conf
+
+# SSL certificates (由 certbot 產生)
+certbot/conf/
+
+# ACME challenge files
+certbot/www/
+
+# Logs
+*.log
