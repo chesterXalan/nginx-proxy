@@ -3,7 +3,9 @@
 
 set -e
 
-CRON_CMD="0 3 * * * cd $HOME/nginx-proxy && docker compose run --rm certbot renew --quiet && docker compose restart nginx"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
+CRON_CMD="0 3 * * * cd $PROJECT_DIR && docker compose run --rm certbot renew --quiet && docker compose restart nginx"
 
 case "$1" in
     on|enable)
