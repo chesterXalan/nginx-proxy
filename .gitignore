@@ -7,8 +7,5 @@ nginx/conf.d/default.conf
 # SSL certificates (由 certbot 產生)
 certbot/conf/
 
-# ACME challenge files
-certbot/www/
-
 # Logs
 *.log
