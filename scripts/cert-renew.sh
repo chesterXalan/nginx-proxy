@@ -6,6 +6,6 @@ cd "$(dirname "$0")/.."
 
 docker compose run --rm certbot renew
 
-echo "重啟 nginx..."
-docker compose restart nginx
+echo "reload nginx..."
+docker compose exec nginx nginx -s reload
 echo "完成！"

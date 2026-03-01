@@ -6,11 +6,15 @@ cd "$(dirname "$0")/.."
 
 if [ ! -f certbot/cloudflare.ini ]; then
     echo "錯誤: 請先建立 certbot/cloudflare.ini 並填入 Cloudflare API Token"
-    echo "參考 certbot/cloudflare.example.ini"
     exit 1
 fi
 
-DOMAIN="${1:-bot.cxa.soy}"
+if [ -z "$1" ]; then
+    echo "用法: $0 <domain>"
+    exit 1
+fi
+
+DOMAIN="$1"
 
 docker compose run --rm certbot certonly \
     --dns-cloudflare \
@@ -22,6 +26,6 @@ docker compose run --rm certbot certonly \
     --agree-tos \
     --email "admin@${DOMAIN#*.}"
 
-echo "憑證簽發完成，重啟 nginx..."
-docker compose restart nginx
+echo "憑證簽發完成，reload nginx..."
+docker compose exec nginx nginx -s reload
 echo "完成！"

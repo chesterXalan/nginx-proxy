@@ -5,7 +5,7 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
-CRON_CMD="0 3 * * * cd $PROJECT_DIR && docker compose run --rm certbot renew --quiet && docker compose restart nginx"
+CRON_CMD="0 3 * * * cd $PROJECT_DIR && docker compose run --rm certbot renew --quiet && docker compose exec nginx nginx -s reload"
 
 case "$1" in
     on|enable)
