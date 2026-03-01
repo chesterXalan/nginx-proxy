@@ -1,7 +1,6 @@
 services:
   nginx:
     image: nginx:alpine
-    container_name: nginx-proxy
     restart: unless-stopped
     ports:
       - "80:80"
@@ -15,7 +14,6 @@ services:
 
   certbot:
     image: certbot/dns-cloudflare
-    container_name: certbot
     volumes:
       - ./certbot/conf:/etc/letsencrypt
       - ./certbot/cloudflare.ini:/etc/cloudflare.ini:ro

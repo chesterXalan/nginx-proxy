@@ -48,7 +48,7 @@ docker compose up -d
 
 ```text
 nginx-proxy/
-├── docker-compose.yml
+├── compose.yaml
 ├── nginx/
 │   ├── nginx.conf
 │   └── conf.d/
