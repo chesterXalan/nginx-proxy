@@ -9,11 +9,13 @@ CRON_CMD="0 3 * * * cd $PROJECT_DIR && docker compose run --rm certbot renew --q
 
 case "$1" in
     on|enable)
-        (crontab -l 2>/dev/null | grep -v "nginx-proxy.*certbot"; echo "$CRON_CMD") | crontab -
+        # `|| true` 接住 crontab 完全為空的情況：crontab -l exit 1 + grep 無 input exit 1
+        # 在 set -e + subshell 下會中斷導致 echo $CRON_CMD 不執行，crontab - 收到空 stdin 不寫入
+        (crontab -l 2>/dev/null | grep -v "nginx-proxy.*certbot" || true; echo "$CRON_CMD") | crontab -
         echo "✅ 自動續簽已開啟（每天凌晨 3 點檢查）"
         ;;
     off|disable)
-        crontab -l 2>/dev/null | grep -v "nginx-proxy.*certbot" | crontab -
+        { crontab -l 2>/dev/null | grep -v "nginx-proxy.*certbot" || true; } | crontab -
         echo "❌ 自動續簽已關閉"
         ;;
     status)
